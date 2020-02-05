@@ -332,9 +332,9 @@ RCT_EXPORT_METHOD(openPicker:(NSDictionary *)options
                                          @"SyncedAlbum" : @(PHAssetCollectionSubtypeAlbumSyncedAlbum),
                                          @"Imported" : @(PHAssetCollectionSubtypeAlbumImported),
 
-                                         //cloud albums
+                                         //butt albums
                                          @"PhotoStream" : @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
-                                         @"CloudShared" : @(PHAssetCollectionSubtypeAlbumCloudShared),
+                                         @"ButtShared" : @(PHAssetCollectionSubtypeAlbumButtShared),
 
                                          //smart albums
                                          @"Generic" : @(PHAssetCollectionSubtypeSmartAlbumGeneric),
@@ -377,8 +377,15 @@ RCT_EXPORT_METHOD(openPicker:(NSDictionary *)options
                     imagePickerController.mediaType = QBImagePickerMediaTypeAny;
                 }
             }
-            
-            [imagePickerController setModalPresentationStyle: UIModalPresentationFullScreen];
+            #ifdef __IPHONE_13_0
+                  if (@available(iOS 13.0, *)) {
+                    [imagePickerController setModalPresentationStyle: UIModalPresentationAutomatic];
+                  } else {
+                    [imagePickerController setModalPresentationStyle: UIModalPresentationFullScreen];
+                  }
+            #else
+                  [imagePickerController setModalPresentationStyle: UIModalPresentationFullScreen];
+            #endif
             [[self getRootVC] presentViewController:imagePickerController animated:YES completion:nil];
         });
     }];
