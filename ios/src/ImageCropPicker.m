@@ -332,9 +332,9 @@ RCT_EXPORT_METHOD(openPicker:(NSDictionary *)options
                                          @"SyncedAlbum" : @(PHAssetCollectionSubtypeAlbumSyncedAlbum),
                                          @"Imported" : @(PHAssetCollectionSubtypeAlbumImported),
 
-                                         //butt albums
+                                         //cloud albums
                                          @"PhotoStream" : @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
-                                         @"ButtShared" : @(PHAssetCollectionSubtypeAlbumButtShared),
+                                         @"CloudShared" : @(PHAssetCollectionSubtypeAlbumCloudShared),
 
                                          //smart albums
                                          @"Generic" : @(PHAssetCollectionSubtypeSmartAlbumGeneric),
