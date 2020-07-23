@@ -441,6 +441,10 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
             [outputURL getResourceValue:&fileSizeValue
                                  forKey:NSURLFileSizeKey
                                   error:nil];
+            
+            AVURLAsset *durationFromUrl = [AVURLAsset assetWithURL:outputURL];
+            CMTime time = [durationFromUrl duration];
+            int milliseconds = ceil(time.value/time.timescale) * 1000;
 
             completion([self createAttachmentResponse:[outputURL absoluteString]
                                              withExif:nil
@@ -451,6 +455,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                            withHeight:[NSNumber numberWithFloat:track.naturalSize.height]
                                              withMime:@"video/mp4"
                                              withSize:fileSizeValue
+                                             withDuration:[NSNumber numberWithFloat:milliseconds]
                                              withData:nil
                                              withRect:CGRectNull
                                      withCreationDate:nil
@@ -481,7 +486,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
      }];
 }
 
-- (NSDictionary*) createAttachmentResponse:(NSString*)filePath withExif:(NSDictionary*) exif withSourceURL:(NSString*)sourceURL withLocalIdentifier:(NSString*)localIdentifier withFilename:(NSString*)filename withWidth:(NSNumber*)width withHeight:(NSNumber*)height withMime:(NSString*)mime withSize:(NSNumber*)size withData:(NSString*)data withRect:(CGRect)cropRect withCreationDate:(NSDate*)creationDate withModificationDate:(NSDate*)modificationDate {
+- (NSDictionary*) createAttachmentResponse:(NSString*)filePath withExif:(NSDictionary*) exif withSourceURL:(NSString*)sourceURL withLocalIdentifier:(NSString*)localIdentifier withFilename:(NSString*)filename withWidth:(NSNumber*)width withHeight:(NSNumber*)height withMime:(NSString*)mime withSize:(NSNumber*)size withDuration:(NSNumber*)duration withData:(NSString*)data withRect:(CGRect)cropRect withCreationDate:(NSDate*)creationDate withModificationDate:(NSDate*)modificationDate {
     return @{
              @"path": (filePath && ![filePath isEqualToString:(@"")]) ? filePath : [NSNull null],
              @"sourceURL": (sourceURL) ? sourceURL : [NSNull null],
@@ -496,6 +501,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
              @"cropRect": CGRectIsNull(cropRect) ? [NSNull null] : [ImageCropPicker cgRectToDictionary:cropRect],
              @"creationDate": (creationDate) ? [NSString stringWithFormat:@"%.0f", [creationDate timeIntervalSince1970]] : [NSNull null],
              @"modificationDate": (modificationDate) ? [NSString stringWithFormat:@"%.0f", [modificationDate timeIntervalSince1970]] : [NSNull null],
+             @"duration": (duration) ? duration : [NSNull null]
              };
 }
 
@@ -632,6 +638,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                                                            withHeight:imageResult.height
                                                                              withMime:imageResult.mime
                                                                              withSize:[NSNumber numberWithUnsignedInteger:imageResult.data.length]
+                                                                             withDuration: nil
                                                                              withData:[[self.options objectForKey:@"includeBase64"] boolValue] ? [imageResult.data base64EncodedStringWithOptions:0]: nil
                                                                              withRect:CGRectNull
                                                                      withCreationDate:phAsset.creationDate
@@ -757,6 +764,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                              withHeight:imageResult.height
                                                withMime:imageResult.mime
                                                withSize:[NSNumber numberWithUnsignedInteger:imageResult.data.length]
+                                               withDuration: nil
                                                withData:[[self.options objectForKey:@"includeBase64"] boolValue] ? [imageResult.data base64EncodedStringWithOptions:0] : nil
                                                withRect:CGRectNull
                                        withCreationDate:creationDate
@@ -822,6 +830,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                          withHeight:imageResult.height
                                            withMime:imageResult.mime
                                            withSize:[NSNumber numberWithUnsignedInteger:imageResult.data.length]
+                                           withDuration: nil
                                            withData:[[self.options objectForKey:@"includeBase64"] boolValue] ? [imageResult.data base64EncodedStringWithOptions:0] : nil
                                            withRect:cropRect
                                    withCreationDate:self.croppingFile[@"creationDate"]
