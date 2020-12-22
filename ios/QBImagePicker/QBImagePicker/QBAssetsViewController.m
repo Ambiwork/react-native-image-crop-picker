@@ -478,7 +478,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
         NSInteger minutes = (NSInteger)(asset.duration / 60.0);
         NSInteger seconds = (NSInteger)ceil(asset.duration - 60.0 * (double)minutes);
-        cell.videoIndicatorView.timeLabel.text = [NSString stringWithFormat:@"%02ld:%02ld", (long)minutes, (long)seconds];
+        cell.videoIndicatorView.timeLabel.text = [NSString stringWithFormat:@"%ld:%02ld", (long)minutes, (long)seconds];
 
         if (asset.mediaSubtypes & PHAssetMediaSubtypeVideoHighFrameRate) {
             cell.videoIndicatorView.videoIcon.hidden = YES;
@@ -488,6 +488,11 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             cell.videoIndicatorView.videoIcon.hidden = NO;
             cell.videoIndicatorView.slomoIcon.hidden = YES;
         }
+        
+//        if (self.imagePickerController.selectedAssets.count > 0 && ![self.imagePickerController.selectedAssets containsObject:asset]) {
+//            cell.userInteractionEnabled = NO;
+//            cell.alpha = 0.7;
+//        }
     } else {
         cell.videoIndicatorView.hidden = YES;
     }
@@ -565,8 +570,18 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    QBImagePickerController *imagePickerController = self.imagePickerController;
+    NSMutableOrderedSet *selectedAssets = imagePickerController.selectedAssets;
+
+    PHAsset *asset = self.fetchResult[indexPath.item];
+    if (imagePickerController.allowsMultipleSelection) {
+        if (asset.mediaType == PHAssetMediaTypeVideo) {
+            return (selectedAssets.count == 0);
+        }
+    }
+
+
     if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:shouldSelectAsset:)]) {
-        PHAsset *asset = self.fetchResult[indexPath.item];
         return [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController shouldSelectAsset:asset];
     }
 
@@ -585,6 +600,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     PHAsset *asset = self.fetchResult[indexPath.item];
 
     if (imagePickerController.allowsMultipleSelection) {
+        if (asset.mediaType == PHAssetMediaTypeVideo && selectedAssets.count == 0) {
+            imagePickerController.allowsMultipleSelection = NO;
+            [selectedAssets addObject:asset];
+            return;
+        }
+
+
         if ([self isAutoDeselectEnabled] && selectedAssets.count > 0) {
             // Remove previous selected asset from set
             [selectedAssets removeObjectAtIndex:0];
