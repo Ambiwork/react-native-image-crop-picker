@@ -204,6 +204,10 @@
                                                 <constraint firstAttribute="right" secondItem="m99-yj-HSc" secondAttribute="right" constant="4" id="aQv-HN-dQG"/>
                                             </constraints>
                                         </view>
+                                        <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z5F-b7-9ds">
+                                            <rect key="frame" x="0.0" y="0.0" width="77.5" height="77.5"/>
+                                            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.50170068027210879" colorSpace="custom" customColorSpace="displayP3"/>
+                                        </view>
                                     </subviews>
                                 </view>
                                 <constraints>
@@ -216,9 +220,13 @@
                                     <constraint firstItem="BwJ-KE-LWZ" firstAttribute="top" secondItem="fc0-k1-HNL" secondAttribute="top" id="UJz-U6-yN2"/>
                                     <constraint firstAttribute="trailing" secondItem="BwJ-KE-LWZ" secondAttribute="trailing" id="ViU-xg-jBz"/>
                                     <constraint firstItem="BwJ-KE-LWZ" firstAttribute="leading" secondItem="fc0-k1-HNL" secondAttribute="leading" id="cOY-Et-5UE"/>
+                                    <constraint firstAttribute="trailing" secondItem="z5F-b7-9ds" secondAttribute="trailing" id="dFN-6N-wwh"/>
+                                    <constraint firstAttribute="bottom" secondItem="z5F-b7-9ds" secondAttribute="bottom" id="gB8-bL-MyD"/>
                                     <constraint firstAttribute="bottom" secondItem="0aq-fn-r9R" secondAttribute="bottom" id="iIA-2y-gLa"/>
                                     <constraint firstAttribute="bottom" secondItem="BwJ-KE-LWZ" secondAttribute="bottom" id="jYP-8U-0SU"/>
+                                    <constraint firstItem="z5F-b7-9ds" firstAttribute="top" secondItem="fc0-k1-HNL" secondAttribute="top" id="kxg-Gx-l5p"/>
                                     <constraint firstItem="uyS-Tg-Iyl" firstAttribute="top" secondItem="fc0-k1-HNL" secondAttribute="top" id="q37-T4-cB2"/>
+                                    <constraint firstItem="z5F-b7-9ds" firstAttribute="leading" secondItem="fc0-k1-HNL" secondAttribute="leading" id="q8Y-9X-4dg"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -226,6 +234,7 @@
                                     </mask>
                                 </variation>
                                 <connections>
+                                    <outlet property="disabledView" destination="z5F-b7-9ds" id="6uh-FG-x6H"/>
                                     <outlet property="imageView" destination="0aq-fn-r9R" id="smK-ma-TWL"/>
                                     <outlet property="overlayView" destination="uyS-Tg-Iyl" id="N6m-w2-m4M"/>
                                     <outlet property="videoIndicatorView" destination="BwJ-KE-LWZ" id="HkB-Dc-nzF"/>

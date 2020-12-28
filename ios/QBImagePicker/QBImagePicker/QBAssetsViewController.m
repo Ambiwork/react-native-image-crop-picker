@@ -489,10 +489,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             cell.videoIndicatorView.slomoIcon.hidden = YES;
         }
         
-//        if (self.imagePickerController.selectedAssets.count > 0 && ![self.imagePickerController.selectedAssets containsObject:asset]) {
-//            cell.userInteractionEnabled = NO;
-//            cell.alpha = 0.7;
-//        }
+        if (self.imagePickerController.selectedAssets.count > 0 && ![self.imagePickerController.selectedAssets containsObject:asset]) {
+            cell.userInteractionEnabled = NO;
+            cell.disabledView.hidden = NO;
+        } else if (self.imagePickerController.selectedAssets.count == 0) {
+            cell.userInteractionEnabled = YES;
+            cell.disabledView.hidden = YES;
+        }
     } else {
         cell.videoIndicatorView.hidden = YES;
     }

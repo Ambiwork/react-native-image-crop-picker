@@ -20,6 +20,10 @@
 {
     [super setSelected:selected];
     
+//    if (!self.disabledView.isHidden) {
+//        self.disabledView.hidden = true;
+//    };
+    
     // Show/hide overlay view
     self.overlayView.hidden = !(selected && self.showsOverlayViewWhenSelected);
 }
