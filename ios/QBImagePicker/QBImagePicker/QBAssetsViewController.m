@@ -489,6 +489,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             cell.videoIndicatorView.slomoIcon.hidden = YES;
         }
         
+        cell.videoIndicatorView.timeLabel.hidden = ([self.imagePickerController.selectedAssets containsObject:asset]);
+        
         if (self.imagePickerController.selectedAssets.count > 0 && ![self.imagePickerController.selectedAssets containsObject:asset]) {
             cell.userInteractionEnabled = NO;
             cell.disabledView.hidden = NO;
@@ -498,6 +500,14 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         }
     } else {
         cell.videoIndicatorView.hidden = YES;
+        
+        if (self.imagePickerController.selectedAssets.count == 1) {
+            PHAsset *selectedAsset = [self.imagePickerController.selectedAssets firstObject];
+            cell.userInteractionEnabled = (selectedAsset.mediaType != PHAssetMediaTypeVideo);
+            cell.disabledView.hidden = (selectedAsset.mediaType != PHAssetMediaTypeVideo);
+        }
+        cell.userInteractionEnabled = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
+        cell.disabledView.hidden = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
     }
 
     // Selection state
@@ -603,10 +613,23 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     PHAsset *asset = self.fetchResult[indexPath.item];
 
     if (imagePickerController.allowsMultipleSelection) {
-        if (asset.mediaType == PHAssetMediaTypeVideo && selectedAssets.count == 0) {
-            imagePickerController.allowsMultipleSelection = NO;
-            [selectedAssets addObject:asset];
-            return;
+        if (asset.mediaType == PHAssetMediaTypeVideo) {
+            QBAssetCell *selectedCell = (QBAssetCell *)[collectionView cellForItemAtIndexPath:indexPath];
+            selectedCell.videoIndicatorView.timeLabel.hidden = YES;
+        }
+        
+        for (QBAssetCell *cell in collectionView.visibleCells) {
+            NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
+            PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
+            if (cellIndexPath.item != indexPath.item) {
+                if (cellAsset.mediaType == PHAssetMediaTypeVideo || asset.mediaType == PHAssetMediaTypeVideo) {
+                    cell.disabledView.hidden = NO;
+                    cell.userInteractionEnabled = NO;
+                } else {
+                    cell.disabledView.hidden = (![self isMaximumSelectionLimitReached] || cell.isSelected);
+                    cell.userInteractionEnabled = (![self isMaximumSelectionLimitReached] || cell.isSelected);
+                }
+            }
         }
 
 
@@ -656,6 +679,25 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     NSMutableOrderedSet *selectedAssets = imagePickerController.selectedAssets;
 
     PHAsset *asset = self.fetchResult[indexPath.item];
+    
+    if (asset.mediaType == PHAssetMediaTypeVideo) {
+        QBAssetCell *selectedCell = (QBAssetCell *)[collectionView cellForItemAtIndexPath:indexPath];
+        selectedCell.videoIndicatorView.timeLabel.hidden = NO;
+    }
+    
+    for (QBAssetCell *cell in collectionView.visibleCells) {
+        NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
+        PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
+        if (cellIndexPath.item != indexPath.item) {
+            if (cellAsset.mediaType == PHAssetMediaTypeVideo) {
+                cell.disabledView.hidden = (selectedAssets.count == 1);
+                cell.userInteractionEnabled = (selectedAssets.count == 1);
+            } else {
+                cell.disabledView.hidden = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
+                cell.userInteractionEnabled = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
+            }
+        }
+    }
 
     // Remove asset from set
     [selectedAssets removeObject:asset];
