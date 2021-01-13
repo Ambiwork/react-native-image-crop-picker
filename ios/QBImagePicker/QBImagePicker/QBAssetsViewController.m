@@ -491,12 +491,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         
         cell.videoIndicatorView.timeLabel.hidden = ([self.imagePickerController.selectedAssets containsObject:asset]);
         
-        if (self.imagePickerController.selectedAssets.count > 0 && ![self.imagePickerController.selectedAssets containsObject:asset]) {
-            cell.userInteractionEnabled = NO;
-            cell.disabledView.hidden = NO;
-        } else if (self.imagePickerController.selectedAssets.count == 0) {
-            cell.userInteractionEnabled = YES;
-            cell.disabledView.hidden = YES;
+        if (self.imagePickerController.selectedAssets.count > 0) {
+            cell.userInteractionEnabled = ([self.imagePickerController.selectedAssets containsObject:asset]);
+            cell.disabledView.hidden = ([self.imagePickerController.selectedAssets containsObject:asset]);
+        } else {
+            cell.userInteractionEnabled = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset]);
+            cell.disabledView.hidden = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset]);
         }
     } else {
         cell.videoIndicatorView.hidden = YES;
@@ -505,9 +505,10 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             PHAsset *selectedAsset = [self.imagePickerController.selectedAssets firstObject];
             cell.userInteractionEnabled = (selectedAsset.mediaType != PHAssetMediaTypeVideo);
             cell.disabledView.hidden = (selectedAsset.mediaType != PHAssetMediaTypeVideo);
+        } else {
+            cell.userInteractionEnabled = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
+            cell.disabledView.hidden = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
         }
-        cell.userInteractionEnabled = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
-        cell.disabledView.hidden = (self.imagePickerController.selectedAssets.count == 0 || [self.imagePickerController.selectedAssets containsObject:asset] || ![self isMaximumSelectionLimitReached]);
     }
 
     // Selection state
@@ -617,21 +618,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             QBAssetCell *selectedCell = (QBAssetCell *)[collectionView cellForItemAtIndexPath:indexPath];
             selectedCell.videoIndicatorView.timeLabel.hidden = YES;
         }
-        
-        for (QBAssetCell *cell in collectionView.visibleCells) {
-            NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
-            PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
-            if (cellIndexPath.item != indexPath.item) {
-                if (cellAsset.mediaType == PHAssetMediaTypeVideo || asset.mediaType == PHAssetMediaTypeVideo) {
-                    cell.disabledView.hidden = NO;
-                    cell.userInteractionEnabled = NO;
-                } else {
-                    cell.disabledView.hidden = (![self isMaximumSelectionLimitReached] || cell.isSelected);
-                    cell.userInteractionEnabled = (![self isMaximumSelectionLimitReached] || cell.isSelected);
-                }
-            }
-        }
-
 
         if ([self isAutoDeselectEnabled] && selectedAssets.count > 0) {
             // Remove previous selected asset from set
@@ -649,6 +635,23 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         self.lastSelectedItemIndexPath = indexPath;
 
         [self updateDoneButtonState];
+        
+        
+        // handle max selection count disabled cells
+        for (QBAssetCell *cell in collectionView.visibleCells) {
+            NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
+            PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
+            if (cellIndexPath.item != indexPath.item) {
+                if (cellAsset.mediaType == PHAssetMediaTypeVideo || asset.mediaType == PHAssetMediaTypeVideo) {
+                    cell.disabledView.hidden = NO;
+                    cell.userInteractionEnabled = NO;
+                } else {
+                    cell.disabledView.hidden = (![self isMaximumSelectionLimitReached] || cell.isSelected);
+                    cell.userInteractionEnabled = (![self isMaximumSelectionLimitReached] || cell.isSelected);
+                }
+            }
+        }
+        
 
         if (imagePickerController.showsNumberOfSelectedAssets) {
             [self updateSelectionInfo];
@@ -684,20 +687,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         QBAssetCell *selectedCell = (QBAssetCell *)[collectionView cellForItemAtIndexPath:indexPath];
         selectedCell.videoIndicatorView.timeLabel.hidden = NO;
     }
-    
-    for (QBAssetCell *cell in collectionView.visibleCells) {
-        NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
-        PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
-        if (cellIndexPath.item != indexPath.item) {
-            if (cellAsset.mediaType == PHAssetMediaTypeVideo) {
-                cell.disabledView.hidden = (selectedAssets.count == 1);
-                cell.userInteractionEnabled = (selectedAssets.count == 1);
-            } else {
-                cell.disabledView.hidden = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
-                cell.userInteractionEnabled = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
-            }
-        }
-    }
 
     // Remove asset from set
     [selectedAssets removeObject:asset];
@@ -705,6 +694,23 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     self.lastSelectedItemIndexPath = nil;
 
     [self updateDoneButtonState];
+    
+    
+    // update other cells to determine if max selection count has been reached
+    for (QBAssetCell *cell in collectionView.visibleCells) {
+        NSIndexPath *cellIndexPath = [collectionView indexPathForCell:cell];
+        PHAsset *cellAsset = self.fetchResult[cellIndexPath.item];
+        if (cellIndexPath.item != indexPath.item) {
+            if (cellAsset.mediaType == PHAssetMediaTypeVideo) {
+                cell.disabledView.hidden = (selectedAssets.count == 0);
+                cell.userInteractionEnabled = (selectedAssets.count == 0);
+            } else {
+                cell.disabledView.hidden = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
+                cell.userInteractionEnabled = (asset.mediaType == PHAssetMediaTypeVideo || ![self isMaximumSelectionLimitReached] || cell.isSelected);
+            }
+        }
+    }
+    
 
     if (imagePickerController.showsNumberOfSelectedAssets) {
         [self updateSelectionInfo];
