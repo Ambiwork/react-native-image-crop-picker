@@ -472,6 +472,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
     PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc] init];
     options.version = PHVideoRequestOptionsVersionOriginal;
     options.networkAccessAllowed = YES;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     
     [manager
      requestAVAssetForVideo:forAsset
